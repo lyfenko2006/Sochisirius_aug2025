@@ -7,8 +7,7 @@ using JLD2
 
 @quickactivate "Sochisirius_aug2025"
 include(joinpath(@__DIR__, "../src/All_function.jl"))
-using .All_function: HIV_replication, inhibition, apply_inhibitors!
-# export HIV_replication
+using .All_function: HIV_replication, inhibition, apply_inhibitors_1!
 # Данные для DRV (PI)
 IC50_DRV = 0.0264 * 547.66 / 1000
 
@@ -19,9 +18,8 @@ inhibitors = DataFrame(
     m = [2.14],
     target = ["k_mat"] 
 )
-#datadir("sims", "matrix_u2.jld2")
+
 pt = CSV.File(datadir("parameters.txt"), header=false, delim=' ', ignorerepeated=true)
-# pt = readdir(datadir("parameters.txt"))
 pnames = String.(pt.Column1)
 p = Float64.(pt.Column2)
 lb = Float64.(pt.Column3)
@@ -50,7 +48,7 @@ println("Start calculate matrix")
 V_mat_pi = []
 for (i, conc1) in enumerate(0:0.005:0.07)
     local_p = copy(p)
-    apply_inhibitors!(local_p, inhibitors, conc1)
+    apply_inhibitors_1!(local_p, inhibitors, conc1)
             
     local_prob = ODEProblem(HIV_replication,u0,tspan,local_p)
     local_sol = solve(local_prob,RadauIIA5(),reltol=1e-14,abstol=1e-14)

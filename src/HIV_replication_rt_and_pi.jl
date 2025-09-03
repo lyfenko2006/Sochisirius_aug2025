@@ -7,11 +7,11 @@ using JSON
 using HDF5
 using DataFrames
 using DelimitedFiles
-using JLD2
+# using JLD2
 
-ENV["JULIA_SSL_LIBRARY"] = "/usr/lib/x86_64-linux-gnu/libssl.so.3"  
-using Pkg
-Pkg.build("LibCURL")  # Пересобираем LibCURL
+# ENV["JULIA_SSL_LIBRARY"] = "/usr/lib/x86_64-linux-gnu/libssl.so.3"  
+# using Pkg
+# Pkg.build("LibCURL")  # Пересобираем LibCURL
 
 function HIV_replication(du,u,p,t)
     V_free, V_bound, RNA_cor, DNA_cor, DNA_nuc, DNA_int,
@@ -161,7 +161,7 @@ function apply_inhibitors!(p, inhibitors, conc1, conc2, conc3)
     p[49] *= eff_mat
 end
 
-pt = CSV.File(datadir("parameters.txt"), header=false, delim=' ', ignorerepeated=true)
+pt = CSV.File("parameters.txt", header=false, delim=' ', ignorerepeated=true)
 pnames = String.(pt.Column1)
 p = Float64.(pt.Column2)
 lb = Float64.(pt.Column3)
