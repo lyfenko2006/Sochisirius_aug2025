@@ -15,7 +15,7 @@ using DelimitedFiles
 ENV["JULIA_SSL_LIBRARY"] = "/usr/lib/x86_64-linux-gnu/libssl.so.3.3"  
 using Pkg
 Pkg.build("LibCURL")  # Пересобираем LibCURL
-export HIV_replication, inhibition, apply_inhibitors_1!, apply_inhibitors_2!
+export HIV_replication, inhibition, apply_inhibitors_1!, apply_inhibitors_2!, jumps, vartojumps, jumptovars
 function HIV_replication(du,u,p,t)
     V_free, V_bound, RNA_cor, DNA_cor, DNA_nuc, DNA_int,
     	mRNA_g, mRNA_ss, mRNA_ds, mRNAc_g, mRNAc_ss, mRNAc_ds,
@@ -164,5 +164,146 @@ function apply_inhibitors_2!(p, inhibitors, conc1, conc2, conc3)
     p[4] *= eff_rt
     p[49] *= eff_mat
 end
+
+jumps = []
+
+# mapping the variables to the rates that depend on them
+vartojumps = Vector{Vector{Int64}}()
+
+# mapping the jump events to the variables which are changed in them
+jumptovars = Vector{Vector{Int64}}()
+ 
+push!(vartojumps, [1,2]) # u[1] (rate1 and rate2 depend on u[1])
+push!(vartojumps, [3,4]) # u[2] (rates 3 and 4 depend on u[2])
+# TODO: ... push values to vartojumps for the rates 5-11 ...
+#
+# ...
+push!(vartojumps, [3,5,6]) # u[3] (rates 3, 5, 6 depend on u[3])
+push!(vartojumps, [5,7,8]) # u[4] (rates 5, 7 and 8 depend on u[4])
+push!(vartojumps, [7,9,10]) # u[5] (rates 7, 9 and 10 depend on u[5])
+push!(vartojumps, [9,11]) # u[6] (rates 9 and 11 depend on u[6])
+
+#    #dV_free
+#    du[1] = -k_bound*V_free - d*V_free
+function rate1(u,p,t) 
+    #k_bound*V_free
+    p[1]*u[1]
+end
+function affect1!(integrator)
+    integrator.u[1] -= 1
+    integrator.u[2] += 1
+    nothing
+end
+push!(jumps, ConstantRateJump(rate1, affect1!))
+push!(jumptovars, [1,2]) # (affect1 changes u[1] and u[2])
+
+function rate2(u,p,t)
+    #d*V_free
+    p[50]*u[1]
+end
+function affect2!(integrator)
+    integrator.u[1] -= 1
+end
+push!(jumps, ConstantRateJump(rate2,affect2!))
+push!(jumptovars, [1]) # (affect2 changes u[1])
+
+#    #dV_bound
+#    du[2] = k_bound*V_free - (k_fuse+d_bound)*V_bound
+function rate3(u,p,t)
+    #k_fuse*V_bound
+    p[3]*u[2]
+end
+function affect3!(integrator)
+    integrator.u[2] -= 1
+    integrator.u[3] += 1
+end
+push!(jumps, ConstantRateJump(rate3,affect3!))
+push!(jumptovars, [2,3]) # (affect3 changes u[2] and u[3])
+
+function rate4(u,p,t)
+    #d_bound*V_bound
+    p[2]*u[2]
+end
+function affect4!(integrator)
+    integrator.u[2] -= 1
+end
+push!(jumps, ConstantRateJump(rate4,affect4!))
+push!(jumptovars, [2]) # (affect4 changes u[2])
+
+# TODO: add rates 5 to 11
+#
+# ...
+function rate5(u,p,t)
+    #k_RT*RNA_cor
+    p[4]*u[3]
+end
+function affect5!(integrator)
+    integrator.u[3] -= 1
+    integrator.u[4] += 1
+end
+push!(jumps, ConstantRateJump(rate5,affect5!))
+push!(jumptovars, [3,4]) # (affect5 changes u[3] and u[4])
+
+function rate6(u,p,t)
+    #d_RNA_cor*RNA_cor
+    p[5]*u[3]
+end
+function affect6!(integrator)
+    integrator.u[3] -= 1
+end
+push!(jumps, ConstantRateJump(rate6,affect6!))
+push!(jumptovars, [3]) # (affect6 changes u[3])
+
+function rate7(u,p,t)
+    #k_DNA_t*DNA_cor
+    p[7]*u[4]
+end
+function affect7!(integrator)
+    integrator.u[4] -= 1
+    integrator.u[5] += 1
+end
+push!(jumps, ConstantRateJump(rate7,affect7!))
+push!(jumptovars, [4,5]) # (affect7 changes u[4] and u[5])
+
+function rate8(u,p,t)
+    #d_DNA_cor * DNA_cor
+    p[6]*u[4]
+end
+function affect8!(integrator)
+    integrator.u[4] -= 1
+end
+push!(jumps, ConstantRateJump(rate8,affect8!))
+push!(jumptovars, [4]) # (affect8 changes u[4])
+
+function rate9(u,p,t)
+    #k_int * DNA_nuc
+    p[9]*u[5]
+end
+function affect9!(integrator)
+    integrator.u[5] -= 1
+    integrator.u[6] += 1
+end
+push!(jumps, ConstantRateJump(rate9,affect9!))
+push!(jumptovars, [5,6]) # (affect9 changes u[5] and u[6])
+
+function rate10(u,p,t)
+    #dDNA_nuc * DNA_nuc
+    p[8]*u[5]
+end
+function affect10!(integrator)
+    integrator.u[5] -= 1
+end
+push!(jumps, ConstantRateJump(rate10,affect10!))
+push!(jumptovars, [5]) # (affect10 changes u[5])
+
+function rate11(u,p,t)
+    #dDNA_int * DNA_int
+    p[10]*u[6]
+end
+function affect11!(integrator)
+    integrator.u[6] -= 1
+end
+push!(jumps, ConstantRateJump(rate11,affect11!))
+push!(jumptovars, [6]) # (affect11 changes u[6])
 
 end
