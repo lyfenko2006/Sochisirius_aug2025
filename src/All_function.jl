@@ -15,7 +15,7 @@ using DelimitedFiles
 ENV["JULIA_SSL_LIBRARY"] = "/usr/lib/x86_64-linux-gnu/libssl.so.3.3"  
 using Pkg
 Pkg.build("LibCURL")  # Пересобираем LibCURL
-export HIV_replication, inhibition, apply_inhibitors_1!, apply_inhibitors_2!, jumps, vartojumps, jumptovars
+export HIV_replication, inhibition, apply_inhibitors_1!, apply_inhibitors_2!, apply_inhibitors_3!, jumps, vartojumps, jumptovars
 function HIV_replication(du,u,p,t)
     V_free, V_bound, RNA_cor, DNA_cor, DNA_nuc, DNA_int,
     	mRNA_g, mRNA_ss, mRNA_ds, mRNAc_g, mRNAc_ss, mRNAc_ds,
@@ -163,6 +163,24 @@ function apply_inhibitors_2!(p, inhibitors, conc1, conc2, conc3)
     end
     p[4] *= eff_rt
     p[49] *= eff_mat
+end
+
+function apply_inhibitors_3!(p, inhibitors, conc1, conc2, conc3)
+    concentrations = [conc1, conc2, conc3]
+
+    eff_rt = 1.0
+    # eff_mat = 1.0
+
+    for (i, row) in enumerate(eachrow(inhibitors))
+        eff = inhibition(concentrations[i], row.IC50, row.m)
+        # if row.target == "k_mat"
+        #     eff_mat *= eff
+        if  row.target == "k_RT"
+            eff_rt *= eff
+        end
+    end
+    p[4] *= eff_rt
+    # p[49] *= eff_mat
 end
 
 jumps = []
