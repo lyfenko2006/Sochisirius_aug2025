@@ -1,15 +1,13 @@
 # Sochisirius_aug2025
 
-This code base is using the [Julia Language](https://julialang.org/) and
+В этом коде используются [Julia Language](https://julialang.org/) and
 [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
-to make a reproducible scientific project named
+Для создания и воспроизведения научного проекта под названием
 > Sochisirius_aug2025
 
-To (locally) reproduce this project, do the following:
+Для (локального) воспроизведения этого проекта:
 
-0. Download this code base. Notice that raw data are typically not included in the
-   git-history and may need to be downloaded independently.
-1. Open a Julia console and do:
+1. Откройте Julia и выполните:
    ```
    julia> using Pkg
    julia> Pkg.add("DrWatson") # install globally, for using `quickactivate`
@@ -17,12 +15,21 @@ To (locally) reproduce this project, do the following:
    julia> Pkg.instantiate()
    ```
 
-This will install all necessary packages for you to be able to run the scripts and
-everything should work out of the box, including correctly finding local paths.
+При этом будут установлены все необходимые пакеты, чтобы вы могли запускать скрипты, и
+все должно работать "из коробки", включая правильный поиск локальных путей.
 
-You may notice that most scripts start with the commands:
+Перед запуском скриптов выполните:
 ```julia
 using DrWatson
 @quickactivate "Sochisirius_aug2025"
 ```
-which auto-activate the project and enable local path handling from DrWatson.
+которые автоматически активируют проект и включают обработку локального пути из Drwatson.
+
+Непосредственно для запуска скрипта используйте:
+```julia
+include(scriptsdir("Название_скрипта.jl"))
+```
+
+При возникновении ошибки связанной с OPENSSL перезапустите скрипт не выходя из julia.
+
+Для запуска многопоточной программы запускайте julia с опцией --threads=количество_потоков
