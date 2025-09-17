@@ -7,7 +7,7 @@ using JLD2
 
 @quickactivate "Sochisirius_aug2025"
 include(joinpath(@__DIR__, "../src/All_function.jl"))
-using .All_function: HIV_replication, inhibition, apply_inhibitors_1!
+using .All_function: HIV_replication, inhibition, apply_inhibitors!
 # Данные для DRV (PI)
 IC50_DRV = 0.0264 * 547.66 / 1000
 
@@ -27,7 +27,7 @@ ub = Float64.(pt.Column4)
 @assert all(lb .<= p .<= ub)
 
 # initial condition
-u0 = repeat([0.0],26)
+u0 = repeat([0.0],27)
 V0 = 10.0
 u0[1] = V0
 t_final = 36
@@ -48,7 +48,8 @@ println("Start calculate matrix")
 V_mat_pi = []
 for (i, conc1) in enumerate(0:0.005:0.07)
     local_p = copy(p)
-    apply_inhibitors_1!(local_p, inhibitors, conc1)
+    concentrations = [conc1]
+    apply_inhibitors!(local_p, inhibitors, concentrations)
             
     local_prob = ODEProblem(HIV_replication,u0,tspan,local_p)
     local_sol = solve(local_prob,RadauIIA5(),reltol=1e-14,abstol=1e-14)

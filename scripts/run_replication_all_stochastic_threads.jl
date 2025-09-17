@@ -10,7 +10,7 @@ using SparseArrays
 
 @quickactivate "Sochisirius_aug2025"
 include(joinpath(@__DIR__, "../src/All_function.jl"))
-using .All_function: apply_inhibitors_3!, jumps, vartojumps, jumptovars
+using .All_function: apply_inhibitors!, jumps, vartojumps, jumptovars
 
 Threads.nthreads() = max(4, Sys.CPU_THREADS) 
 println("Доступно потоков: ", nthreads())
@@ -84,7 +84,8 @@ Threads.@threads for j in 1:count_calc
             for (idx3, conc3) in enumerate(NRTI_conc_range)
                 
                 local_p = copy(p)
-                apply_inhibitors_3!(local_p, inhibitors, 1.0, conc2, conc3)  # DRV=0.0, NRTIs varying
+                concentrations = [1.0, conc2, conc3]
+                apply_inhibitors!(local_p, inhibitors, concentrations)  # DRV=0.0, NRTIs varying
 
                 discrete_prob = DiscreteProblem(Int64.(local_u0), tspan, local_p)
                 jump_prob = JumpProblem(discrete_prob,

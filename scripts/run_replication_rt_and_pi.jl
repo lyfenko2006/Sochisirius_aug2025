@@ -7,7 +7,7 @@ using JLD2
 
 @quickactivate "Sochisirius_aug2025"
 include(joinpath(@__DIR__, "../src/All_function.jl"))
-using .All_function: HIV_replication, inhibition, apply_inhibitors_2!
+using .All_function: HIV_replication, inhibition, apply_inhibitors!
 
 # Данные для 3TC и AZT (NRTI)
 IC50_3TC = 0.00363258 # µM
@@ -53,7 +53,8 @@ for (i, conc1) in enumerate(0:0.005:0.07)
             local_u0 = repeat([0.0], 27)
             local_u0[1] = V0
             local_p = copy(p)
-            apply_inhibitors_2!(local_p, inhibitors, conc1, conc2, conc3)
+            concentrations = [conc1, conc2, conc3]
+            apply_inhibitors!(local_p, inhibitors, concentrations)
             
             local_prob = ODEProblem(HIV_replication,local_u0,tspan,local_p)
             local_sol = solve(local_prob,RadauIIA5(),reltol=1e-14,abstol=1e-14)

@@ -6,7 +6,7 @@ using HDF5
 
 @quickactivate "Sochisirius_aug2025"
 include(joinpath(@__DIR__, "../src/All_function.jl"))
-using .All_function: inhibition, apply_inhibitors_4!, jumps, vartojumps, jumptovars
+using .All_function: inhibition, apply_inhibitors!, jumps, vartojumps, jumptovars
 
 # Данные для 3TC и AZT (NRTI)
 IC50_3TC = 0.003633 # µM
@@ -69,7 +69,8 @@ for (idx2, conc2) in enumerate(NRTI_conc_range)
     for (idx3, conc3) in enumerate(NRTI_conc_range)
                 
         local_p = copy(p)
-        apply_inhibitors_4!(local_p, inhibitors, conc2, conc3) 
+        concentrations = [conc2, conc3]
+        apply_inhibitors!(local_p, inhibitors, concentrations) 
         local_discrete_prob = DiscreteProblem(Int64.(u0), tspan, local_p)
         local_jump_prob = JumpProblem(local_discrete_prob,
                                         Direct(),
